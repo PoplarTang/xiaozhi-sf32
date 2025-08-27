@@ -108,7 +108,7 @@
 #define REG_VCOM_SET           0xBB
 #define REG_LCM_CTRL           0xC0
 #define REG_VDV_VRH_EN         0xC2
-#define REG_VRH_SET            0xC4
+#define REG_VRH_SET            0xC3
 #define REG_VDV_SET            0xC4
 
 #define REG_FR_CTRL            0xC6
@@ -188,24 +188,27 @@ static void LCD_Init(LCDC_HandleTypeDef *hlcdc)
     memcpy(&hlcdc->Init, &lcdc_int_cfg, sizeof(LCDC_InitTypeDef));
     HAL_LCDC_Init(hlcdc);
 
+    LCD_DRIVER_DELAY_MS(25);
     BSP_LCD_Reset(0);//Reset LCD
-    HAL_Delay_us(10);
+    LCD_DRIVER_DELAY_MS(25);
     BSP_LCD_Reset(1);
 
-    BSP_LCD_PowerUp();
+    LCD_DRIVER_DELAY_MS(50);
+    // BSP_LCD_PowerUp();
+    BSP_LCD_BLKSet();
 
-    /* SLP OUT 0x11*/
-    LCD_WriteReg(hlcdc, REG_SLEEP_OUT, (uint8_t *)NULL, 0);
+    // /* SLP OUT 0x11*/
+    // LCD_WriteReg(hlcdc, REG_SLEEP_OUT, (uint8_t *)NULL, 0);
 
-    /* Sleep In Command */
-    LCD_WriteReg(hlcdc, REG_SLEEP_IN, (uint8_t *)NULL, 0);
-    /* Wait for 10ms */
-    LCD_DRIVER_DELAY_MS(10);
+    // /* Sleep In Command */
+    // LCD_WriteReg(hlcdc, REG_SLEEP_IN, (uint8_t *)NULL, 0);
+    // /* Wait for 10ms */
+    // LCD_DRIVER_DELAY_MS(10);
 
-    /* SW Reset Command */
-    LCD_WriteReg(hlcdc, 0x01, (uint8_t *)NULL, 0);
-    /* Wait for 200ms */
-    LCD_DRIVER_DELAY_MS(200);
+    // /* SW Reset Command */
+    // LCD_WriteReg(hlcdc, 0x01, (uint8_t *)NULL, 0);
+    // /* Wait for 200ms */
+    // LCD_DRIVER_DELAY_MS(200);
 
     /* Sleep Out Command */
     LCD_WriteReg(hlcdc, REG_SLEEP_OUT, (uint8_t *)NULL, 0);
@@ -245,8 +248,11 @@ static void LCD_Init(LCDC_HandleTypeDef *hlcdc)
 
     /* VDV and VRH Command Enable (0xC2) */
     parameter[0] = 0x01;
-    parameter[1] = 0xC3;
-    LCD_WriteReg(hlcdc, REG_VDV_VRH_EN, parameter, 2);
+    LCD_WriteReg(hlcdc, REG_VDV_VRH_EN, parameter, 1);
+
+    /* VRH 0xC3 */
+    parameter[0] = 0x19;
+    LCD_WriteReg(hlcdc, REG_VRH_SET, parameter, 1);
 
     /* VDV Set (0xC4) */
     parameter[0] = 0x20;
@@ -316,6 +322,8 @@ static void LCD_Init(LCDC_HandleTypeDef *hlcdc)
     /* Tearing Effect Line On: Option (00h:VSYNC Only, 01h:VSYNC & HSYNC) (0x35) */
     // parameter[0] = 0x00;
     // LCD_WriteReg(hlcdc, REG_TEARING_EFFECT, parameter, 1);
+    
+    LCD_DRIVER_DELAY_MS(50);
 }
 
 /**

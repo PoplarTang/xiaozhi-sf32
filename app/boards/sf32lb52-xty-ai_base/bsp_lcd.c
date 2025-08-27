@@ -14,6 +14,10 @@ void BSP_LCD_Reset(uint8_t high1_low0)
     BSP_GPIO_Set(LCD_RESET_PIN, high1_low0, 1);
 }
 
+void BSP_LCD_BLKSet(){
+    BSP_GPIO_Set(LCD_BL_PIN, 1, 1);
+}
+
 void BSP_LCD_PowerDown(void)
 {
     // TODO: LCD power down
@@ -45,5 +49,6 @@ void BSP_LCD_PowerUp(void)
 
     HAL_PIN_Set(PAD_PA00, GPIO_A0, PIN_NOPULL, 1);
 }
+
 
 #endif
