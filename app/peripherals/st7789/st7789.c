@@ -144,11 +144,7 @@ static LCDC_InitTypeDef lcdc_int_cfg =
 
 };
 
-
-
-
-
-
+extern void BSP_LCD_BLKSet(void);
 
 /**
   * @brief  spi read/write mode

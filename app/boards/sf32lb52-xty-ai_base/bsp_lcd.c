@@ -14,7 +14,8 @@ void BSP_LCD_Reset(uint8_t high1_low0)
     BSP_GPIO_Set(LCD_RESET_PIN, high1_low0, 1);
 }
 
-void BSP_LCD_BLKSet(){
+void BSP_LCD_BLKSet(void)
+{
     BSP_GPIO_Set(LCD_BL_PIN, 1, 1);
 }
 
