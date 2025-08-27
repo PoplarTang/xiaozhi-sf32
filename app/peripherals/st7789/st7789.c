@@ -108,6 +108,7 @@
 #define REG_VCOM_SET           0xBB
 #define REG_LCM_CTRL           0xC0
 #define REG_VDV_VRH_EN         0xC2
+#define REG_VRH_SET            0xC4
 #define REG_VDV_SET            0xC4
 
 #define REG_FR_CTRL            0xC6
@@ -191,6 +192,11 @@ static void LCD_Init(LCDC_HandleTypeDef *hlcdc)
     HAL_Delay_us(10);
     BSP_LCD_Reset(1);
 
+    BSP_LCD_PowerUp();
+
+    /* SLP OUT 0x11*/
+    LCD_WriteReg(hlcdc, REG_SLEEP_OUT, (uint8_t *)NULL, 0);
+
     /* Sleep In Command */
     LCD_WriteReg(hlcdc, REG_SLEEP_IN, (uint8_t *)NULL, 0);
     /* Wait for 10ms */
@@ -206,22 +212,18 @@ static void LCD_Init(LCDC_HandleTypeDef *hlcdc)
     /* Wait for 120ms */
     LCD_DRIVER_DELAY_MS(120);
 
-    /* Normal display for Driver Down side */
+    /* Normal display for Driver Down side - MADCTL (0x36) */
     parameter[0] = 0x00;
-    parameter[0] = (LCD_CMD_MV_BIT|LCD_CMD_MX_BIT);
     LCD_WriteReg(hlcdc, REG_NORMAL_DISPLAY, parameter, 1);
 
-    /* Color mode 16bits/pixel */
-    parameter[0] = 0x55;
+    /* Color mode 16bits/pixel - COLMOD (0x3A) */
+    parameter[0] = 0x65;
     LCD_WriteReg(hlcdc, REG_COLOR_MODE, parameter, 1);
 
-    /* Display inversion On */
-    LCD_WriteReg(hlcdc, REG_DISPLAY_INVERSION, (uint8_t *)NULL, 0);
-
-#if 0
-
-    /*--------------- ST7789 Frame rate setting -------------------------------*/
-    /* PORCH control setting */
+    /* Display inversion On - INVON (0x21) */
+    // LCD_WriteReg(hlcdc, REG_DISPLAY_INVERSION, (uint8_t *)NULL, 0);
+    
+    /* PORCH control setting - (0xB2) */
     parameter[0] = 0x0C;
     parameter[1] = 0x0C;
     parameter[2] = 0x00;
@@ -229,116 +231,91 @@ static void LCD_Init(LCDC_HandleTypeDef *hlcdc)
     parameter[4] = 0x33;
     LCD_WriteReg(hlcdc, REG_PORCH_CTRL, parameter, 5);
 
-    /* GATE control setting */
-    parameter[0] = 0x35;
+    /* Gate Control (0xB7) */
+    parameter[0] = 0x72;
     LCD_WriteReg(hlcdc, REG_GATE_CTRL, parameter, 1);
 
-    /*--------------- ST7789 Power setting ------------------------------------*/
-    /* VCOM setting */
-    parameter[0] = 0x1F;
+    /* VCOM setting (0xBB) */
+    parameter[0] = 0x3D;
     LCD_WriteReg(hlcdc, REG_VCOM_SET, parameter, 1);
 
-    /* LCM Control setting */
+    /* LCM Control (0xC0) */
     parameter[0] = 0x2C;
     LCD_WriteReg(hlcdc, REG_LCM_CTRL, parameter, 1);
 
-    /* VDV and VRH Command Enable */
+    /* VDV and VRH Command Enable (0xC2) */
     parameter[0] = 0x01;
     parameter[1] = 0xC3;
     LCD_WriteReg(hlcdc, REG_VDV_VRH_EN, parameter, 2);
 
-    /* VDV Set */
+    /* VDV Set (0xC4) */
     parameter[0] = 0x20;
     LCD_WriteReg(hlcdc, REG_VDV_SET, parameter, 1);
 
-    /* Frame Rate Control in normal mode */
-    parameter[0] = 0x0F;
+    /* Frame Rate Control in normal mode (0xC6) */
+    parameter[0] = 0x01;
     LCD_WriteReg(hlcdc, REG_FR_CTRL, parameter, 1);
 
-    /* Power Control */
+    /* Power Control (0xD0) */
     parameter[0] = 0xA4;
     parameter[1] = 0xA1;
-    LCD_WriteReg(hlcdc, REG_POWER_CTRL, parameter, 1);
-
-#endif
+    LCD_WriteReg(hlcdc, REG_POWER_CTRL, parameter, 2);
 
     /*--------------- ST7789 Gamma setting ------------------------------------*/
-    /* Positive Voltage Gamma Control */
+    /* Positive Voltage Gamma Control (0xE0) */
     parameter[0] = 0xD0;
     parameter[1] = 0x08;
-    parameter[2] = 0x11;
-    parameter[3] = 0x08;
-    parameter[4] = 0x0C;
-    parameter[5] = 0x15;
-    parameter[6] = 0x39;
+    parameter[2] = 0x0E;
+    parameter[3] = 0x09;
+    parameter[4] = 0x09;
+    parameter[5] = 0x05;
+    parameter[6] = 0x31;
     parameter[7] = 0x33;
-    parameter[8] = 0x50;
-    parameter[9] = 0x36;
-    parameter[10] = 0x13;
-    parameter[11] = 0x14;
-    parameter[12] = 0x29;
-    parameter[13] = 0x2D;
+    parameter[8] = 0x48;
+    parameter[9] = 0x17;
+    parameter[10] = 0x14;
+    parameter[11] = 0x15;
+    parameter[12] = 0x31;
+    parameter[13] = 0x34;
     LCD_WriteReg(hlcdc, REG_PV_GAMMA_CTRL, parameter, 14);
 
-    /* Negative Voltage Gamma Control */
+    /* Negative Voltage Gamma Control (0xE1) */
     parameter[0] = 0xD0;
     parameter[1] = 0x08;
-    parameter[2] = 0x10;
-    parameter[3] = 0x08;
-    parameter[4] = 0x06;
-    parameter[5] = 0x06;
-    parameter[6] = 0x39;
-    parameter[7] = 0x44;
-    parameter[8] = 0x51;
-    parameter[9] = 0x0B;
-    parameter[10] = 0x16;
-    parameter[11] = 0x14;
-    parameter[12] = 0x2F;
-    parameter[13] = 0x31;
+    parameter[2] = 0x0E;
+    parameter[3] = 0x09;
+    parameter[4] = 0x09;
+    parameter[5] = 0x15;
+    parameter[6] = 0x31;
+    parameter[7] = 0x33;
+    parameter[8] = 0x48;
+    parameter[9] = 0x17;
+    parameter[10] = 0x14;
+    parameter[11] = 0x15;
+    parameter[12] = 0x31;
+    parameter[13] = 0x34;
     LCD_WriteReg(hlcdc, REG_NV_GAMMA_CTRL, parameter, 14);
 
-
-#if 0
-
-    /* Set Column address CASET */
-    parameter[0] = 0x00;
-    parameter[1] = 0x00;
-    parameter[2] = 0x00;
-    parameter[3] = THE_LCD_PIXEL_WIDTH - 1;
-    LCD_WriteReg(hlcdc, REG_CASET, parameter, 4);
-    /* Set Row address RASET */
-    parameter[0] = 0x00;
-    parameter[1] = 0x00;
-    parameter[2] = 0x00;
-    parameter[3] = THE_LCD_PIXEL_HEIGHT - 1;
-    LCD_WriteReg(hlcdc, REG_RASET, parameter, 4);
-
-    LCD_WriteReg(hlcdc, REG_WRITE_RAM, (uint8_t *)NULL, 0);
-
-    for (uint32_t i = 0; i < 240; i++)
-    {
-        for (uint32_t j = 0; j < 240; j++)
-        {
-            LCD_IO_WriteData16(0x0000);
-        }
-    }
-#endif
-
-    /* Set frame control*/
+    /* Set frame control (0xB3)
     parameter[0] = 0x01;
     parameter[1] = 0x0F;
     parameter[2] = 0x0F;
     LCD_WriteReg(hlcdc, ST7789_FRAME_CTRL, parameter, 3);
+     */
+    
 
-
-
-    /* Display ON command */
+    /* INVERSE ON 0x21*/
+    LCD_WriteReg(hlcdc, REG_DISPLAY_INVERSION, (uint8_t *)NULL, 0);
+    /* SLP OUT 0x11*/
+    LCD_WriteReg(hlcdc, REG_SLEEP_OUT, (uint8_t *)NULL, 0);
+    /* normal ON (0x13)*/
+    LCD_WriteReg(hlcdc, 0x13, (uint8_t *)NULL, 0);
+    /* Display ON command (0x29) */
     LCD_WriteReg(hlcdc, REG_DISPLAY_ON, (uint8_t *)NULL, 0);
 
-
-    /* Tearing Effect Line On: Option (00h:VSYNC Only, 01h:VSYNC & HSYNC ) */
-    parameter[0] = 0x00;
-    LCD_WriteReg(hlcdc, REG_TEARING_EFFECT, parameter, 1);
+    /* Tearing Effect Line On: Option (00h:VSYNC Only, 01h:VSYNC & HSYNC) (0x35) */
+    // parameter[0] = 0x00;
+    // LCD_WriteReg(hlcdc, REG_TEARING_EFFECT, parameter, 1);
 }
 
 /**
